@@ -22,7 +22,7 @@ class User {
 
   static async findById(id) {
     const sql = `SELECT 
-    id, name, email, avatar, bio, cover_image, created_at FROM users WHERE id = $1
+    id, name, email, avatar, bio, cover_image, is_tick, created_at FROM users WHERE id = $1
     `;
     const result = await db.query(sql, [id]);
     if (result.rows[0]) {
@@ -33,14 +33,14 @@ class User {
   }
 
   static async updateProfile(id, data) {
-    const { name, bio, avatarUrl, coverImageUrl } = data;
+    const { name, bio, avatarUrl, coverImageUrl, is_tick } = data;
 
     // Đảm bảo avatar và coverImage là array hợp lệ
     const avatar = Array.isArray(avatarUrl) ? avatarUrl : avatarUrl ? [avatarUrl] : [];
     const coverImage = Array.isArray(coverImageUrl) ? coverImageUrl : coverImageUrl ? [coverImageUrl] : [];
 
-    const sql = `UPDATE users SET name = $1, bio = $2, avatar = $3::jsonb, cover_image = $4::jsonb WHERE id = $5 RETURNING *`;
-    const values = [name, bio, JSON.stringify(avatar), JSON.stringify(coverImage), id];
+    const sql = `UPDATE users SET name = $1, bio = $2, avatar = $3::jsonb, cover_image = $4::jsonb, is_tick = $5 WHERE id = $6 RETURNING *`;
+    const values = [name, bio, JSON.stringify(avatar), JSON.stringify(coverImage), is_tick, id];
 
     const result = await db.query(sql, values);
     return result.rowCount > 0;
@@ -93,6 +93,12 @@ class User {
     const values = [JSON.stringify(coverArray), id];
 
     const result = await db.query(sql, values);
+    return result.rowCount > 0;
+  }
+
+  static async updateTickStatus(id, is_tick) {
+    const sql = `UPDATE users SET is_tick = $1 WHERE id = $2 RETURNING *`;
+    const result = await db.query(sql, [is_tick, id]);
     return result.rowCount > 0;
   }
 }

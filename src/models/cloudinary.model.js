@@ -49,7 +49,25 @@ class CloudinaryModel {
     }
   }
 
-  // MỚI: Lấy danh sách file trong folder
+  static async deleteMultipleFiles(publicIds = []) {
+    try {
+      const deleteResults = await Promise.all(
+        publicIds.map(async (publicId) => {
+          const result = await cloudinary.uploader.destroy(publicId);
+          return {
+            public_id: publicId,
+            result: result.result,
+          };
+        })
+      );
+      return deleteResults;
+    } catch (error) {
+      console.error("Cloudinary delete multiple error:", error);
+      throw new Error("Failed to delete multiple files from Cloudinary");
+    }
+  }
+
+  //Lấy danh sách file trong folder
   static async listFilesInFolder(folder = "posts", maxResults = 100, resourceType = "image") {
     try {
       const result = await cloudinary.api.resources({

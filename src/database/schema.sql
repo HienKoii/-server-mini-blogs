@@ -7,6 +7,7 @@ CREATE TABLE users (
     avatar JSONB DEFAULT '[]',
     cover_image JSONB DEFAULT '[]',
     bio TEXT,
+    is_tick BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_email UNIQUE (email),
