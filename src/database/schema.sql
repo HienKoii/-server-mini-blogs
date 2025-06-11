@@ -1,64 +1,71 @@
 -- Users table
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    avatar VARCHAR(255),
+    avatar JSONB DEFAULT '[]',
+    cover_image JSONB DEFAULT '[]',
+    bio TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_email UNIQUE (email),
+    CONSTRAINT check_email CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
 -- Posts table
 CREATE TABLE posts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
     content TEXT,
-    media JSON DEFAULT '[]', 
-    status TINYINT DEFAULT 0, -- 0: công khai, 1: chỉ mình tôi
-    likes INT DEFAULT 0,
-    comments INT DEFAULT 0,
+    media JSONB DEFAULT '[]',
+    status SMALLINT DEFAULT 0,
+    likes INTEGER DEFAULT 0,
+    comments INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT check_status CHECK (status IN (0, 1))
 );
 
 -- Likes table
 CREATE TABLE likes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    post_id INT,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    post_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_like (user_id, post_id)
+    CONSTRAINT unique_like UNIQUE (user_id, post_id)
 );
 
 -- Comments table
 CREATE TABLE comments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    post_id INT,
-    content TEXT,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    post_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 
 -- Saved posts table
 CREATE TABLE saved_posts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    post_id INT,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    post_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_save (user_id, post_id)
+    CONSTRAINT unique_save UNIQUE (user_id, post_id)
 );
 
 -- Indexes for better performance
 CREATE INDEX idx_posts_user_id ON posts(user_id);
+CREATE INDEX idx_posts_status ON posts(status);
+CREATE INDEX idx_posts_created_at ON posts(created_at);
 CREATE INDEX idx_likes_post_id ON likes(post_id);
 CREATE INDEX idx_likes_user_id ON likes(user_id);
 CREATE INDEX idx_comments_post_id ON comments(post_id);

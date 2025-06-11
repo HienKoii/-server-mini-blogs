@@ -16,8 +16,8 @@ const postsRouter = require("./routers/posts.router");
 app.use("/api/auth", authRouter);
 app.use("/api/posts", postsRouter);
 
-app.use("/",( req, res) => {
-  res.send('Hello World!')
+app.use("/", (req, res) => {
+  res.send("Hello World!");
 });
 
 // Error handling
