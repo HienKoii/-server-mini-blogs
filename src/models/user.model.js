@@ -35,11 +35,12 @@ class User {
   static async updateProfile(id, data) {
     const { name, bio, avatarUrl, coverImageUrl } = data;
 
-    const avatar = avatarUrl || [];
-    const coverImage = coverImageUrl || [];
+    // Đảm bảo avatar và coverImage là array hợp lệ
+    const avatar = Array.isArray(avatarUrl) ? avatarUrl : avatarUrl ? [avatarUrl] : [];
+    const coverImage = Array.isArray(coverImageUrl) ? coverImageUrl : coverImageUrl ? [coverImageUrl] : [];
 
-    const sql = `UPDATE users SET name = $1, bio = $2, avatar = $3, cover_image = $4 WHERE id = $5 RETURNING *`;
-    const values = [name, bio, avatar, coverImage, id];
+    const sql = `UPDATE users SET name = $1, bio = $2, avatar = $3::jsonb, cover_image = $4::jsonb WHERE id = $5 RETURNING *`;
+    const values = [name, bio, JSON.stringify(avatar), JSON.stringify(coverImage), id];
 
     const result = await db.query(sql, values);
     return result.rowCount > 0;
@@ -69,8 +70,8 @@ class User {
         ]
       : [];
 
-    const sql = `UPDATE users SET avatar = $1 WHERE id = $2 RETURNING *`;
-    const values = [avatarArray, id];
+    const sql = `UPDATE users SET avatar = $1::jsonb WHERE id = $2 RETURNING *`;
+    const values = [JSON.stringify(avatarArray), id];
 
     const result = await db.query(sql, values);
     return result.rowCount > 0;
@@ -88,8 +89,8 @@ class User {
         ]
       : [];
 
-    const sql = `UPDATE users SET cover_image = $1 WHERE id = $2 RETURNING *`;
-    const values = [coverArray, id];
+    const sql = `UPDATE users SET cover_image = $1::jsonb WHERE id = $2 RETURNING *`;
+    const values = [JSON.stringify(coverArray), id];
 
     const result = await db.query(sql, values);
     return result.rowCount > 0;
